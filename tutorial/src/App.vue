@@ -1,35 +1,48 @@
 <template>
   <div id="app">
-    <todos v-bind:todos="todos"/>
+
+    <Header />
+    <add-todo v-on:add-todo="addTodo"/>
+    <todos v-bind:todos="todos" v-on:del-todo="deleteTodo"/>
   </div>
 </template>
 
 <script>
 import Todos from './components/Todos.vue';
+import Header from './components/Header'
+import AddTodo from './components/AddTodo.vue';
+import axios from 'axios'
 export default {
   name: "App",
-  components: {Todos},
+  components: {Todos, Header, AddTodo},
   data() {
     return {
       todos: [
-        {
-          id: 1,
-          title: "FIRST TODO",
-          completed: false,
-        },
-        {
-          id: 2,
-          title: "Second TODO",
-          completed: false,
-        },
-        {
-          id: 3,
-          title: "Third TODO",
-          completed: true,
-        },
       ],
     };
   },
+  methods:{
+    deleteTodo(id){
+        this.todos.splice(id-1,1)
+    },
+    addTodo(newTodo){
+      const {title,completed} = newTodo;
+      axios.post("https://jsonplaceholder.typicode.com/todos", {
+        title,
+        completed
+      }).then(res => {
+      this.todos = [...this.todos, res.data]
+      }).catch(err => console.log(err))
+    }
+  },
+  created(){
+    axios.get("https://jsonplaceholder.typicode.com/todos?_limit=20")
+    .then(res => {
+      this.todos = res.data
+    }).catch(err => {
+      console.log(err)
+    })
+  }
 };
 </script>
 
